@@ -5,7 +5,7 @@ var
   LblMobileDisplay,LblWinDisplay,LblMobileQuestion,LblWinCountDown : TclLabel;
   BtnCevapla:TCLButton;
   EdtCevap:TCLPRoEdit;
-  CekilisTimer,CountDownTimer:TCLTimer;
+  CekilisTimer,CountDownTimer,CountDownTimerMobile:TCLTimer;
   count,second:integer;
   QMemList,QryQuestion:TclJSonQuery;
   dogruCvp:string;
@@ -14,10 +14,11 @@ var
   winOnBtn,winOffBtn : TclButton;
   LogMemo : TclMemo;
   GetTimer: TClTimer;
-  
-  LoopState:Boolean;
   ACommand:string;
+  OnAndOffControl : Boolean;
+  PlayerList:TclStringList;
   
+  varMiControl : Boolean;
   
   //Win Dizayn Tanımlamaları
   PnlTitleAndOnOff,PnlOnOffControl,PnlBalloon,PnlCekilis,PnlTimer : TclProPanel;
@@ -36,13 +37,14 @@ var
   BtnQuestionReply,BtnQuestionPlayerTimer : TclProButton;
   LblQuestionTitle,LblQuestion : TClProLabel;
   EdtReply : TClProEdit;
+  winUserGUID : String;
   
   function GetQuestion(AData:integer):string;
   {
     QryQuestion = TCLJSONQuery.Create(nil);
     try
       try
-        QryQuestion = Clomosy.ClDataSetFromJSON('[{"id":1,"soru":"3+5","cevap":8},{"id":2,"soru":"10-2","cevap":8},{"id":3,"soru":"6*2","cevap":12},{"id":4,"soru":"8/2","cevap":4},{"id":5,"soru":"7+5","cevap":12},{"id":6,"soru":"20-10","cevap":10},{"id":7,"soru":"4*4","cevap":16},{"id":8,"soru":"21/3","cevap":7},{"id":9,"soru":"0+12","cevap":12},{"id":10,"soru":"10+3","cevap":13},{"id":11,"soru":"7-4","cevap":3},{"id":12,"soru":"9*2","cevap":18},{"id":13,"soru":"18/6","cevap":3},{"id":14,"soru":"5+8","cevap":13},{"id":15,"soru":"15-5","cevap":10},{"id":16,"soru":"6*3","cevap":18},{"id":17,"soru":"24/8","cevap":3},{"id":18,"soru":"4+7","cevap":11},{"id":19,"soru":"13-6","cevap":7},{"id":20,"soru":"3*7","cevap":21},{"id":21,"soru":"21/7","cevap":3},{"id":22,"soru":"9+4","cevap":13},{"id":23,"soru":"18-8","cevap":10},{"id":24,"soru":"5*5","cevap":25},{"id":25,"soru":"20/4","cevap":5},{"id":26,"soru":"2+6","cevap":8},{"id":27,"soru":"12-4","cevap":8},{"id":28,"soru":"7*2","cevap":14},{"id":29,"soru":"10/2","cevap":5},{"id":30,"soru":"8+4","cevap":12},{"id":31,"soru":"25-10","cevap":15},{"id":32,"soru":"5*3","cevap":15},{"id":33,"soru":"30/6","cevap":5},{"id":34,"soru":"1+9","cevap":10},{"id":35,"soru":"12+4","cevap":16},{"id":36,"soru":"9-3","cevap":6},{"id":37,"soru":"8*3","cevap":24},{"id":38,"soru":"28/7","cevap":4},{"id":39,"soru":"6+6","cevap":12},{"id":40,"soru":"15+2","cevap":17},{"id":41,"soru":"11-7","cevap":4},{"id":42,"soru":"7*5","cevap":35},{"id":43,"soru":"35/5","cevap":7},{"id":44,"soru":"4+6","cevap":10},{"id":45,"soru":"16-7","cevap":9},{"id":46,"soru":"3*8","cevap":24},{"id":47,"soru":"27/9","cevap":3},{"id":48,"soru":"5+9","cevap":14},{"id":49,"soru":"14-4","cevap":10},{"id":50,"soru":"4*6","cevap":24}]');
+        QryQuestion = Clomosy.ClDataSetFromJSON('[{"id":1,"soru":"3+5","cevap":8},{"id":2,"soru":"10-2","cevap":8},{"id":3,"soru":"6*2","cevap":12},{"id":4,"soru":"8/2","cevap":4},{"id":5,"soru":"7+5","cevap":12},{"id":6,"soru":"20-10","cevap":10},{"id":7,"soru":"4*4","cevap":16},{"id":8,"soru":"21/3","cevap":7},{"id":9,"soru":"0+12","cevap":12},{"id":10,"soru":"10+3","cevap":13},{"id":11,"soru":"7-4","cevap":3},{"id":12,"soru":"9*2","cevap":18},{"id":13,"soru":"18/6","cevap":3},{"id":14,"soru":"5+8","cevap":13},{"id":15,"soru":"15-5","cevap":10},{"id":16,"soru":"6*3","cevap":18},{"id":17,"soru":"24/8","cevap":3},{"id":18,"soru":"4+7","cevap":11},{"id":19,"soru":"13-6","cevap":7},{"id":20,"soru":"3*7","cevap":21},{"id":21,"soru":"21/7","cevap":3},{"id":22,"soru":"9+4","cevap":13},{"id":23,"soru":"18-8","cevap":10},{"id":24,"soru":"5*5","cevap":25},{"id":25,"soru":"20/4","cevap":5},{"id":26,"soru":"2+6","cevap":8},{"id":27,"soru":"12-4","cevap":8},{"id":28,"soru":"7*2","cevap":14},{"id":29,"soru":"10/2","cevap":5},{"id":30,"soru":"8+4","cevap":12},{"id":31,"soru":"25-10","cevap":15},{"id":32,"soru":"5*3","cevap":15},{"id":33,"soru":"30/6","cevap":5},{"id":34,"soru":"1+9","cevap":10},{"id":35,"soru":"12+4","cevap":16},{"id":36,"soru":"9-3","cevap":6},{"id":37,"soru":"8*3","cevap":24},{"id":38,"soru":"28/7","cevap":4},{"id":39,"soru":"6+6","cevap":12},{"id":40,"soru":"15+2","cevap":17},{"id":41,"soru":"11-7","cevap":4},{"id":42,"soru":"7*5","cevap":35},{"id":43,"soru":"35/5","cevap":7},{"id":44,"soru":"4+6","cevap":10},{"id":45,"soru":"16-7","cevap":9},{"id":46,"soru":"3*8","cevap":24},{"id":47,"soru":"27/9","cevap":3},{"id":48,"soru":"5+9","cevap":14},{"id":49,"soru":"14-4","cevap":10},{"id":50,"soru":"4*6","cevap":24},{"id":51,"soru":"10+10","cevap":20},{"id":52,"soru":"15-5","cevap":10},{"id":53,"soru":"8*4","cevap":32},{"id":54,"soru":"32/4","cevap":8},{"id":55,"soru":"9+11","cevap":20},{"id":56,"soru":"25-15","cevap":10},{"id":57,"soru":"7*5","cevap":35},{"id":58,"soru":"36/6","cevap":6},{"id":59,"soru":"12+8","cevap":20},{"id":60,"soru":"14+7","cevap":21},{"id":61,"soru":"28-14","cevap":14},{"id":62,"soru":"9*3","cevap":27},{"id":63,"soru":"27/9","cevap":3},{"id":64,"soru":"7+8","cevap":15},{"id":65,"soru":"30-10","cevap":20},{"id":66,"soru":"5*5","cevap":25},{"id":67,"soru":"45/9","cevap":5},{"id":68,"soru":"11+9","cevap":20},{"id":69,"soru":"16+5","cevap":21},{"id":70,"soru":"21-1","cevap":20},{"id":71,"soru":"6*6","cevap":36},{"id":72,"soru":"48/8","cevap":6},{"id":73,"soru":"10+12","cevap":22},{"id":74,"soru":"24+7","cevap":31},{"id":75,"soru":"31-9","cevap":22},{"id":76,"soru":"9*4","cevap":36},{"id":77,"soru":"36/6","cevap":6},{"id":78,"soru":"14+9","cevap":23},{"id":79,"soru":"25-2","cevap":23},{"id":80,"soru":"4*7","cevap":28},{"id":81,"soru":"49/7","cevap":7},{"id":82,"soru":"13+11","cevap":24},{"id":83,"soru":"26+5","cevap":31},{"id":84,"soru":"31-6","cevap":25},{"id":85,"soru":"6*7","cevap":42},{"id":86,"soru":"56/8","cevap":7},{"id":87,"soru":"15+11","cevap":26},{"id":88,"soru":"27+6","cevap":33},{"id":89,"soru":"33-7","cevap":26},{"id":90,"soru":"5*8","cevap":40},{"id":91,"soru":"40/5","cevap":8},{"id":92,"soru":"17+14","cevap":31},{"id":93,"soru":"35+8","cevap":43},{"id":94,"soru":"43-12","cevap":31},{"id":95,"soru":"7*7","cevap":49},{"id":96,"soru":"63/9","cevap":7},{"id":97,"soru":"18+15","cevap":33},{"id":98,"soru":"33+12","cevap":45},{"id":99,"soru":"45-10","cevap":35},{"id":100,"soru":"8*6","cevap":48},{"id":101,"soru":"48/6","cevap":8},{"id":102,"soru":"20+16","cevap":36},{"id":103,"soru":"36+10","cevap":46},{"id":104,"soru":"46-6","cevap":40},{"id":105,"soru":"9*5","cevap":45},{"id":106,"soru":"54/9","cevap":6},{"id":107,"soru":"22+19","cevap":41},{"id":108,"soru":"38+9","cevap":47},{"id":109,"soru":"47-6","cevap":41},{"id":110,"soru":"10*5","cevap":50},{"id":111,"soru":"60/10","cevap":6},{"id":112,"soru":"25+18","cevap":43},{"id":113,"soru":"43+10","cevap":53},{"id":114,"soru":"53-10","cevap":43},{"id":115,"soru":"11*5","cevap":55},{"id":116,"soru":"55/11","cevap":5},{"id":117,"soru":"30+20","cevap":50},{"id":118,"soru":"50+5","cevap":55},{"id":119,"soru":"55-5","cevap":50},{"id":120,"soru":"12*5","cevap":60},{"id":121,"soru":"60/12","cevap":5},{"id":122,"soru":"35+20","cevap":55},{"id":123,"soru":"55+6","cevap":61},{"id":124,"soru":"61-6","cevap":55},{"id":125,"soru":"13*5","cevap":65},{"id":126,"soru":"65/13","cevap":5},{"id":127,"soru":"40+20","cevap":60},{"id":128,"soru":"60+7","cevap":67},{"id":129,"soru":"67-7","cevap":60},{"id":130,"soru":"14*5","cevap":70},{"id":131,"soru":"70/14","cevap":5},{"id":132,"soru":"45+20","cevap":65},{"id":133,"soru":"65+8","cevap":73},{"id":134,"soru":"73-8","cevap":65},{"id":135,"soru":"15*5","cevap":75},{"id":136,"soru":"75/15","cevap":5},{"id":137,"soru":"50+20","cevap":70},{"id":138,"soru":"70+9","cevap":79},{"id":139,"soru":"79-9","cevap":70},{"id":140,"soru":"16*5","cevap":80},{"id":141,"soru":"80/16","cevap":5},{"id":142,"soru":"55+20","cevap":75},{"id":143,"soru":"75+10","cevap":85},{"id":144,"soru":"85-10","cevap":75},{"id":145,"soru":"17*5","cevap":85},{"id":146,"soru":"85/17","cevap":5},{"id":147,"soru":"60+20","cevap":80},{"id":148,"soru":"80+11","cevap":91},{"id":149,"soru":"91-11","cevap":80},{"id":150,"soru":"18*5","cevap":90}]');
         with QryQuestion do {
           Filtered = False;
           Filter = 'id = '+IntToStr(AData);
@@ -69,9 +71,9 @@ var
   {
     second = 20;
     CountDownTimer.Enabled  = False;
+    MyWinMQTT.Send('WIN|True');
     QMemList = Clomosy.DBCloudQueryWith(ftMembers,'','ISNULL(PMembers.Rec_Deleted,0)=0 ORDER BY NEWID()');//Projeye dahil üyeleri çeker. ATILMIŞLAR GELMEZ
-    QMemList.Filtered = False;
-    QMemList.Filter = 'Member_GUID <> '+QuotedStr('PMP86U93J9');
+    QMemList.Filter = 'Member_GUID <> '+QuotedStr(winUserGUID);
     QMemList.Filtered = True;
     CekilisTimer.Enabled = True;
     LblCekilisPlayerName.Caption = '';
@@ -89,7 +91,7 @@ var
   {
     if clGetStringTo(xMes,'|') == 'MOBILE' {
       if clGetStringAfter(xMes,'|') == 'cekilis' {
-        ACommand = 'OFF1';
+        ACommand = 'BOFF';
         timerShow;
         GetTimer.Enabled = True;
         second = 20;
@@ -124,27 +126,42 @@ var
   var
     soruCvp,content:string;
   {
-    content = clGetStringAfter(xMsj,'|');
-    if clGetStringTo(content,':') == Clomosy.AppUserGUID {//
-      if (clGetStringAfter(content,':') == 'uyesecim'){
-        SetMobileState(True);
-        soruCvp = GetQuestion(clMath.GenerateRandom(1,25));
-        LblExplanation.Caption = 'Sen Çıktın!';
-        ImgMobileBalloon.Visible = False;
-        ImgMobileTitle.Visible = False;
-        MyDevice.Vibrate(500);
-        LblQuestion.Caption = 'Soru:'+#13+''
-        LblQuestion.Caption = LblQuestion.Caption + clGetStringTo(soruCvp,'|');   //SORU
-        dogruCvp = clGetStringAfter(soruCvp,'|');                 //CVP
-      }else if (clGetStringAfter(content,':') == 'suredoldu'){
-        ImgMobileBalloon.Visible = True;
-        ImgMobileTitle.Visible = True;
-        clComponent.SetupComponent(ImgMobileBalloon,'{"ImgUrl":"https://clomosy.com/demos/timer_baloons2.png"}');
-        LblExplanation.Caption = 'SURENIZ DOLDU!!!';
-        SetMobileState(False);
-      }
+    if OnAndOffControl
+    {
+        content = clGetStringAfter(xMsj,'|');
+        if clGetStringTo(content,':') == Clomosy.AppUserGUID {
+          if (clGetStringAfter(content,':') == 'uyesecim'){
+            SetMobileState(True);
+            soruCvp = GetQuestion(clMath.GenerateRandom(1,150));
+            LblExplanation.Caption = 'Sen Çıktın!';
+            PnlForm.Visible = True;
+            ImgMobileBalloon.Visible = False;
+            ImgMobileTitle.Visible = False;
+            MyDevice.Vibrate(500);
+            LblQuestion.Caption = 'Soru:'+#13+''
+            LblQuestion.Caption = LblQuestion.Caption + clGetStringTo(soruCvp,'|');   //SORU
+            dogruCvp = clGetStringAfter(soruCvp,'|');                 //CVP
+          }else if (clGetStringAfter(content,':') == 'suredoldu'){
+            ImgMobileBalloon.Visible = True;
+            ImgMobileTitle.Visible = True;
+            clComponent.SetupComponent(ImgMobileBalloon,'{"ImgUrl":"https://clomosy.com/demos/timer_baloons2.png"}');
+            LblExplanation.Caption = 'SURENIZ DOLDU!!!';
+            SetMobileState(False);
+          }
+          } else{
+              PnlForm.Visible = false;
+              ImgMobileBalloon.Visible = True;
+              ImgMobileTitle.Visible = True;
+              LblExplanation.Caption = 'Bekleniyor...';
+              //SetMobileState(False);
+          }
+    }else
+    {
+      PnlForm.Visible = false;
+      ImgMobileBalloon.Visible = True;
+      ImgMobileTitle.Visible = True;
+       LblExplanation.Caption = 'Bekleniyor...';
     }
-
   }
   
   void MyMobileMQTTPublishReceived;
@@ -155,32 +172,58 @@ var
     if (MyMobileMQTT.ReceivedAlright){
       if (Clomosy.PlatformIsMobile) {
         msj = MyMobileMQTT.ReceivedMessage;
-        //ShowMessage(msj);
           if clGetStringTo(msj,'|') == 'WIN' {
+            if clGetStringAfter(msj,'|') == 'True'{
+              OnAndOffControl = True;
+            }else if clGetStringAfter(msj,'|') == 'False'{
+              OnAndOffControl = False;
+            }
             MobileMQTTMessageHandler(msj);
           }
       }
     }
   }
   
-  
   void CekilisTimerOnTimer;
+  var
+  i : Integer;
   {
-    //
     LblCekilisPlayerName.Caption = QMemList.FieldByName('Member_Name').AsString;
     Clomosy.ProcessMessages;
     if(count==15){    //GUID
       count = 0;
-      CekilisTimer.Enabled    = False;
-      selectedMember = QMemList.FieldByName('Member_GUID').AsString;
-      MyWinMQTT.Send('WIN'+'|'+selectedMember+':'+'uyesecim');
-      BtnPlayerTimer.Visible = True;
-      CountDownTimer.Enabled  = True;
-      //SleepAndCall(500,)
-      ACommand = 'ON1'
-      timerShow;
-      GetTimer.Enabled = True;
-      exit;
+      if PlayerList.Count == QMemList.RecordCount{
+        PlayerList.Free;
+        PlayerList = Clomosy.StringListNew;
+      }
+      
+      for (i = 0 to PlayerList.Count - 1){
+        if QMemList.FieldByName('Member_GUID').AsString == Clomosy.StringListItemString(PlayerList,i){
+          varMiControl = True;
+          break;
+        }else{
+          varMiControl = False;
+        }
+      }
+      
+      if varMiControl{
+        CekilisTimerOnTimer;
+      }else{
+        CekilisTimer.Enabled    = False;
+        selectedMember = QMemList.FieldByName('Member_GUID').AsString;
+        
+        PlayerList.Add(selectedMember);
+        
+        
+        
+        MyWinMQTT.Send('WIN'+'|'+selectedMember+':'+'uyesecim');
+        BtnPlayerTimer.Visible = True;
+        CountDownTimer.Enabled  = True;
+        ACommand = 'BON';
+        timerShow;
+        GetTimer.Enabled = True;
+        exit;
+      }
     }
     QMemList.Next;
     if (QMemList.EOF) 
@@ -198,14 +241,13 @@ var
       //LblMobileDisplay.Caption = 'SURENIZ DOLDU!!!';
       BtnPlayerTimer.Visible = False;
       CountDownTimer.Enabled = False;
-      ACommand = 'OFF1';
+      ACommand = 'BOFF';
       timerShow;
       GetTimer.Enabled = True;
       BtnPlayerTimer.Visible = True;
       BtnCekilisYapOnClick;
     }
     Dec(second);
-    //
   }
   
   void BtnCevaplaOnClick;
@@ -222,16 +264,26 @@ var
   
   void winOnnBtnOnClick;
   {
-    ACommand = 'ON1'
-    timerShow;
+    //ACommand = 'BON'
+    //timerShow;
+    MyWinMQTT.Send('WIN|True');
+    //MobileMQTTMessageHandler('');
     GetTimer.Enabled = True;
-   // MyIotMqtt.Send('ON1');
+    BtnCekilisYapOnClick;
+    
+   // MyIotMqtt.Send('BON');
   }
   void winOffBtnOnClick;{
-    ACommand = 'OFF1'
+    //OnAndOffControl = false;
+    //MobileMQTTMessageHandler('');
+    MyWinMQTT.Send('WIN|False');
+    ACommand = 'BOFF'
     timerShow;
-    GetTimer.Enabled = True;
-  //  MyIotMqtt.Send('OFF1');
+    //GetTimer.Enabled = True;
+    CekilisTimer.Enabled = False;
+    CountDownTimer.Enabled = False;
+    
+  //  MyIotMqtt.Send('BOFF');
   }
 
   void MyWinMQTTStatusChanged;
@@ -248,15 +300,16 @@ var
   }
   
   
-{       //MAIN
-  
+{ //MAIN
+  OnAndOffControl = True;
+  PlayerList = Clomosy.StringListNew;
+  varMiControl = False;
   if (not Clomosy.PlatformIsMobile) { //  Win Tarafi
 
-      
     MyWinForm = TCLForm.Create(Self);
     MyWinForm.SetFormBGImage('https://clomosy.com/demos/bgmobil.png');
     
-    LoopState = False;
+    winUserGUID = Clomosy.AppUserGUID;
     count = 0;
     second = 20;
 
@@ -357,11 +410,7 @@ var
     MyWinForm.AddNewEvent(MyWinMQTT,tbeOnMQTTStatusChanged,'MyWinMQTTStatusChanged');
     MyWinMQTT.Channel = 'clomosy';//project guid + channel
     MyWinMQTT.Connect;
-    
     MyWinForm.Run;
-    
-    
-    
     
   }
   else{                               //  Mobile Tarafi
@@ -382,10 +431,6 @@ var
     LblExplanation = MyMobileForm.AddNewProLabel(MyMobileForm,'LblExplanation','Bekleniyor...');
     clComponent.SetupComponent(LblExplanation,'{"Align" : "Bottom","Height":'+IntToStr(LblExplanation.Height*2)+',"TextSize":25,"MarginBottom":20,
     "TextVerticalAlign":"center", "TextHorizontalAlign":"center","TextBold":"yes"}');
-    
-    
-    
-    
     
     //SORU CEVAPLA ALANI
     //PANEL => FORM
@@ -431,7 +476,6 @@ var
     "TextVerticalAlign":"center", "TextHorizontalAlign":"center","TextColor":"#ffffff","TextBold":"yes","backgroundcolor":"#1c92f4",
     "RoundHeight":20,"RoundWidth":20}');
     MyMobileForm.AddNewEvent(BtnQuestionReply,tbeOnClick,'BtnCevaplaOnClick');
-    
     
     MyMobileMQTT = MyMobileForm.AddNewMQTTConnection(MyMobileForm,'MyMobileMQTT');
     MyMobileForm.AddNewEvent(MyMobileMQTT,tbeOnMQTTPublishReceived,'MyMobileMQTTPublishReceived');
